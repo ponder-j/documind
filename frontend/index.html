@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DocuMind · 企业文档智能体</title>
+<style>
+:root{--ink:#172033;--muted:#7c8492;--line:#e8ebf2;--blue:#5267e8;--bg:#f7f8fa;--side:#f8f9fb}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px system-ui,-apple-system,'Noto Sans SC',sans-serif}.shell{display:flex;height:100vh;max-width:1500px;margin:auto;background:#fff}.side{width:278px;border-right:1px solid var(--line);padding:20px 14px 18px;display:flex;flex-direction:column;background:var(--side);flex:none}.side-head{display:flex;align-items:center;justify-content:space-between;padding:0 10px 20px}.brand{display:flex;align-items:center;gap:9px;font-size:19px;font-weight:700;letter-spacing:-.3px}.mark{width:31px;height:31px;border-radius:10px;background:linear-gradient(135deg,#6579f5,#8d63db);display:grid;place-items:center;color:#fff;font-size:17px}.side-tools{display:flex;gap:4px}.icon-btn{border:0;background:transparent;color:#7d8592;width:31px;height:31px;border-radius:8px;font-size:19px;cursor:pointer}.icon-btn:hover{background:#eceef3;color:var(--ink)}.new-chat{width:100%;height:48px;border:1px solid #e1e4ea;border-radius:24px;background:#fff;color:var(--ink);font-size:16px;font-weight:600;cursor:pointer;box-shadow:0 2px 5px #27324d12;transition:.2s}.new-chat:hover{border-color:#b9c2ff;background:#fdfdff}.new-chat span{font-size:22px;vertical-align:-1px;margin-right:8px;font-weight:400}.history-title{display:flex;align-items:center;justify-content:space-between;padding:29px 11px 9px;color:var(--muted);font-size:14px;font-weight:600}.history-title button{border:0;background:transparent;color:var(--muted);cursor:pointer;font-size:17px}.history-title button:hover{color:var(--ink)}.history-list{flex:1;overflow:auto;padding:0 0 8px}.history-group{margin:0 0 16px}.group-label{padding:6px 11px;color:#9299a5;font-size:13px}.history-item{display:block;width:100%;border:0;background:transparent;text-align:left;padding:11px 13px;margin:2px 0;border-radius:11px;color:var(--ink);font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}.history-item:hover{background:#eef0f3}.history-item.active{background:#eceef1;font-weight:500}.history-empty{padding:10px 11px;color:#a0a7b1;font-size:13px}.side-foot{margin-top:auto;padding:13px 14px;background:#f0f2f6;border-radius:11px;color:var(--muted);font-size:11px;line-height:1.7}.main{flex:1;display:flex;flex-direction:column;min-width:0}.top{height:68px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 38px}.top h1{font-size:17px;margin:0;font-weight:650}.status{color:#2c9a68;font-size:12px}.status i{display:inline-block;width:7px;height:7px;background:#35c783;border-radius:50%;margin-right:6px}.content{max-width:920px;width:100%;margin:auto;padding:38px 34px 24px;display:flex;flex-direction:column;height:calc(100vh - 68px)}.hero h2{font-size:28px;margin:0 0 8px}.hero p{color:var(--muted);margin:0 0 28px}.cards{display:flex;gap:12px;margin-bottom:25px}.card{flex:1;border:1px solid var(--line);border-radius:12px;padding:15px;background:#fff;cursor:pointer;transition:.2s}.card:hover{border-color:#aab4ff;box-shadow:0 5px 18px #5368e817}.card b{display:block;font-size:13px;margin-bottom:7px}.card span{font-size:12px;color:var(--muted)}#log{flex:1;overflow:auto;padding:8px 2px}.msg{display:flex;gap:12px;margin:18px 0;line-height:1.7}.avatar{width:30px;height:30px;border-radius:10px;display:grid;place-items:center;flex:none;font-size:13px}.bot .avatar{background:#eef0ff;color:var(--blue)}.user .avatar{background:#202b45;color:#fff}.bubble{max-width:78%;padding:12px 16px;border-radius:4px 14px 14px 14px;background:#f5f6fa;white-space:pre-wrap}.user{justify-content:flex-end}.user .bubble{background:#5267e8;color:#fff;border-radius:14px 4px 14px 14px}.composer{border:1px solid #dfe3ed;border-radius:16px;padding:10px;background:#fff;box-shadow:0 8px 25px #26345d0d}.composer textarea{width:100%;height:52px;border:0;resize:none;outline:0;font:14px inherit;padding:8px}.tools{display:flex;align-items:center;justify-content:space-between}.tools label{color:var(--muted);cursor:pointer;padding:6px 10px}.tools button{border:0;border-radius:10px;background:var(--blue);color:#fff;padding:9px 18px;font-weight:600;cursor:pointer}.hint{font-size:11px;color:#a3aaba;margin-top:9px;text-align:center}.content.started .hero,.content.started .cards{display:none}.content.started{padding-top:18px}@media(max-width:750px){.side{display:none}.content{padding:24px 16px}.cards{display:none}.top{padding:0 18px}}
+/* Rendered assistant Markdown */
+.bot .bubble.markdown{white-space:normal}
+.markdown p{margin:0 0 10px}.markdown p:last-child{margin-bottom:0}
+.markdown h1,.markdown h2,.markdown h3,.markdown h4,.markdown h5,.markdown h6{margin:0 0 9px;line-height:1.35}
+.markdown h1{font-size:1.35em}.markdown h2{font-size:1.22em}.markdown h3{font-size:1.1em}
+.markdown ul,.markdown ol{margin:5px 0 10px;padding-left:22px}.markdown li{margin:3px 0}
+.markdown code{font:12px ui-monospace,SFMono-Regular,Menlo,monospace;background:#e9ebf3;border-radius:5px;padding:2px 5px}
+.markdown pre{margin:9px 0;overflow:auto;background:#20283b;color:#f4f6fb;border-radius:9px;padding:11px 13px;line-height:1.5}.markdown pre code{background:transparent;padding:0;color:inherit}
+.markdown blockquote{margin:8px 0;padding:4px 12px;border-left:3px solid #c7cdf8;color:#626b7d}.markdown hr{border:0;border-top:1px solid #dfe3ed;margin:12px 0}
+.markdown a{color:#4358d3;text-decoration:underline}.markdown img{display:block;max-width:100%;height:auto;border-radius:8px;margin:6px 0}.markdown table{width:100%;border-collapse:collapse;margin:9px 0;font-size:13px}.markdown th,.markdown td{border:1px solid #dfe3ed;padding:5px 8px;text-align:left}.markdown th{background:#eceef8;font-weight:650}
+.tools button:disabled{opacity:.65;cursor:wait}
+.extraction-card{width:min(100%,720px);margin:-8px 0 20px 42px;border:1px solid #dfe3ed;border-radius:14px;background:#fff;padding:16px;box-shadow:0 5px 18px #26345d0a}.extraction-card h3{margin:0 0 13px;font-size:15px}.extraction-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.extraction-field{display:flex;flex-direction:column;gap:5px;color:#6d7584;font-size:12px}.extraction-field.wide{grid-column:1/-1}.extraction-field input{width:100%;border:1px solid #dfe3ed;border-radius:8px;padding:8px 10px;font:14px inherit;color:var(--ink);background:#fff}.items-title{display:flex;align-items:center;justify-content:space-between;margin:15px 0 8px;font-weight:650}.item-row{display:grid;grid-template-columns:minmax(150px,2fr) minmax(80px,1fr) minmax(100px,1fr) auto;gap:8px;margin-bottom:8px;align-items:end}.item-row button,.add-item{border:1px solid #dfe3ed;background:#fff;border-radius:8px;padding:8px 10px;cursor:pointer}.import-actions{display:flex;align-items:center;gap:12px;margin-top:14px}.confirm-import{border:0;border-radius:9px;background:var(--blue);color:#fff;padding:10px 18px;font-weight:650;cursor:pointer}.import-status{font-size:13px;color:#6d7584}.extraction-card.imported{background:#f6fbf8;border-color:#bde4cd}.extraction-card.imported input{background:#f0f4f1}.extraction-card button:disabled{opacity:.6;cursor:not-allowed}@media(max-width:750px){.extraction-card{margin-left:0}.extraction-grid{grid-template-columns:1fr}.item-row{grid-template-columns:1fr 1fr}.item-row .project-field{grid-column:1/-1}}
+.thinking-msg .bubble{color:#70798b;font-style:italic;display:inline-flex;align-items:center;gap:5px;padding-right:32px}.thinking-msg .bubble::after{content:' ';display:inline-block;width:4px;height:4px;border-radius:50%;background:#8a94aa;box-shadow:7px 0 #8a94aa,14px 0 #8a94aa;animation:thinkingDots 1.2s infinite steps(4,end)}
+@keyframes thinkingDots{0%{opacity:.25}45%{opacity:1}100%{opacity:.25}}
+</style>
+</head>
+<body>
+<div class="shell">
+  <aside class="side">
+    <div class="side-head"><div class="brand"><div class="mark">✦</div>DocuMind</div><div class="side-tools"><button class="icon-btn" title="搜索对话">⌕</button><button class="icon-btn" title="收起侧边栏">▯</button></div></div>
+    <button class="new-chat" onclick="newChat()"><span>⊕</span>新对话</button>
+    <div class="history-title"><span>对话历史</span><button onclick="renderHistory()" title="刷新历史">↻</button></div>
+    <div id="historyList" class="history-list"></div>
+    <div class="side-foot">企业文档处理智能体<br>InternVL · PostgreSQL</div>
+  </aside>
+  <section class="main">
+    <header class="top"><h1>智能对话</h1><div class="status"><i></i>服务运行正常</div></header>
+    <div class="content" id="content">
+      <div class="hero"><h2>你好，我是 DocuMind</h2><p>上传发注书或提出问题，我会帮你提取、查询和分析业务数据。</p></div>
+      <div class="cards"><div class="card" onclick="fill('请识别这张发注书')"><b>📄 识别发注书</b><span>提取公司、日期、项目及金额</span></div><div class="card" onclick="fill('查询新日鉄住金ソリューションズ株式会社2020年的销售数据')"><b>⌕ 查询销售数据</b><span>按公司、年份筛选订单记录</span></div><div class="card" onclick="fill('分析各年度销售量变化趋势')"><b>↗ 分析销售趋势</b><span>生成年度销售变化洞察</span></div></div>
+      <div id="log" aria-live="polite"><div class="msg bot"><div class="avatar">✦</div><div class="bubble">欢迎使用企业文档智能体。你可以选择一个快捷操作，或直接输入问题。</div></div></div>
+      <div class="composer"><textarea id="msg" placeholder="输入问题，例如：查询新日鉄住金ソリューションズ株式会社 2025 年的销售数据"></textarea><div class="tools"><label>＋ <input id="file" type="file" accept="image/png" hidden onchange="fileName()"><span id="fileLabel">上传 PNG 发注书</span></label><button onclick="send()">发送　➤</button></div></div>
+      <div class="hint">内容由 AI 生成，请在导入数据库前确认抽取结果</div>
+    </div>
+  </section>
+</div>
+<script>
+let cid=null,started=false,requestInFlight=false;
+const log=document.querySelector('#log'),msg=document.querySelector('#msg'),file=document.querySelector('#file'),fileLabel=document.querySelector('#fileLabel'),content=document.querySelector('#content'),historyList=document.querySelector('#historyList'),sendButton=document.querySelector('.tools button');
+const HISTORY_KEY='documind_histories', MAX_HISTORY=30;
+function newId(){return crypto.randomUUID?crypto.randomUUID():'web-'+Date.now()+'-'+Math.random().toString(16).slice(2)}
+function timestamp(value,fallback=0){
+  if(typeof value==='number'&&Number.isFinite(value))return value;
+  if(typeof value==='string'&&value.trim()){
+    const n=Number(value);if(Number.isFinite(n))return n;
+    const parsed=Date.parse(value);if(Number.isFinite(parsed))return parsed;
+  }
+  return fallback;
+}
+function readHistories(){
+  let raw=[];
+  try{raw=JSON.parse(localStorage.getItem(HISTORY_KEY)||'[]')}catch(_){raw=[]}
+  if(!Array.isArray(raw))raw=[];
+  const used=new Set();
+  return raw.filter(item=>item&&typeof item==='object').map(item=>{
+    // Always repair duplicate IDs as well as missing IDs.  Titles are labels,
+    // never identifiers, so two sessions may intentionally have the same title.
+    let sessionId=String(item.session_id||item.id||'').trim();
+    if(!sessionId||used.has(sessionId)){do{sessionId=newId()}while(used.has(sessionId))}
+    used.add(sessionId);
+    const createdAt=timestamp(item.createdAt??item.created_at,0);
+    const updatedAt=timestamp(item.updatedAt??item.updated_at,createdAt);
+    return {...item,session_id:sessionId,title:item.title||'新对话',html:typeof item.html==='string'?item.html:'',createdAt,updatedAt};
+  });
+}
+let histories=readHistories();
+function persistHistories(){localStorage.setItem(HISTORY_KEY,JSON.stringify(histories))}
+sortHistories();
+persistHistories();
+function fill(t){msg.value=t;msg.focus()}
+function fileName(){if(file.files[0])fileLabel.textContent=file.files[0].name}
+function clearSelectedFile(){file.value='';fileLabel.textContent='上传 PNG 发注书'}
+function escapeHtml(value){return String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function inlineMarkdown(value){
+  // Escape first so model output can never inject arbitrary HTML.  Links are
+  // restricted to http(s) URLs before they are rendered as anchors.
+  let html=escapeHtml(value);
+  html=html.replace(/!\[([^\]]*)\]\((https?:\/\/[^\s)]+)\)/gi,'<img alt="$1" src="$2" loading="lazy">');
+  html=html.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/gi,'<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+  html=html.replace(/`([^`\n]+)`/g,'<code>$1</code>');
+  html=html.replace(/\*\*([^*\n]+)\*\*|__([^_\n]+)__/g,(_,a,b)=>`<strong>${a||b}</strong>`);
+  html=html.replace(/~~([^~\n]+)~~/g,'<del>$1</del>');
+  html=html.replace(/(?<![\w*])\*([^*\n]+)\*(?!\*)|(?<![\w_])_([^_\n]+)_(?!\w)/g,(_,a,b)=>`<em>${a||b}</em>`);
+  return html;
+}
+function markdownToHtml(value){
+  const lines=String(value??'').replace(/\r\n?/g,'\n').split('\n'),out=[];let i=0,inCode=false,code=[],codeLanguage='';
+  // Ordered lists are often split by an intervening bullet list. Keep the
+  // sequence alive across those list-type switches so every new <ol> starts
+  // at the right number (LLMs also commonly emit `1.` for every item).
+  let orderedSequenceActive=false,lastOrderedNumber=null;
+  const resetOrderedSequence=()=>{orderedSequenceActive=false;lastOrderedNumber=null};
+  const closeList=()=>{if(out.length&&out[out.length-1].type==='list'){const list=out.pop();const start=list.ordered&&list.start>1?` start="${list.start}"`:'';out.push(`<${list.ordered?'ol':'ul'}${start}>${list.items.join('')}</${list.ordered?'ol':'ul'}>`)} };
+  while(i<lines.length){
+    const line=lines[i];
+    const fence=line.match(/^\s*```\s*([\w+-]*)\s*$/);
+    if(fence){
+      if(!inCode){closeList();resetOrderedSequence();inCode=true;code=[];codeLanguage=fence[1]||''}else{out.push(`<pre><code${codeLanguage?` class="language-${escapeHtml(codeLanguage)}"`:''}>${escapeHtml(code.join('\n'))}</code></pre>`);inCode=false;code=[];codeLanguage=''}
+      i++;continue;
+    }
+    if(inCode){code.push(line);i++;continue}
+    if(!line.trim()){closeList();i++;continue}
+    let match=line.match(/^\s*(#{1,6})\s+(.+?)\s*#*\s*$/);
+    if(match){closeList();resetOrderedSequence();out.push(`<h${match[1].length}>${inlineMarkdown(match[2])}</h${match[1].length}>`);i++;continue}
+    if(/^\s*(?:[-*_]\s*){3,}$/.test(line)){closeList();resetOrderedSequence();out.push('<hr>');i++;continue}
+    match=line.match(/^\s*([-*+])\s+(.+)$/);let ordered=false,sourceNumber=null;
+    if(!match) {match=line.match(/^\s*(\d+)[.)]\s+(.+)$/);ordered=!!match;sourceNumber=ordered?Number(match[1]):null}
+    if(match){
+      const item=ordered?match[2]:match[2];let list=out[out.length-1];
+      if(ordered){
+        const requested=Number.isFinite(sourceNumber)&&sourceNumber>0?sourceNumber:1;
+        const next=orderedSequenceActive&&lastOrderedNumber!==null&&requested<=lastOrderedNumber?lastOrderedNumber+1:requested;
+        orderedSequenceActive=true;lastOrderedNumber=next;
+        if(!list||list.type!=='list'||list.ordered!==ordered){closeList();list={type:'list',ordered,start:next,items:[]};out.push(list)}
+      }else if(!list||list.type!=='list'||list.ordered!==ordered){closeList();list={type:'list',ordered,items:[]};out.push(list)}
+      list.items.push(`<li>${inlineMarkdown(item)}</li>`);i++;continue;
+    }
+    match=line.match(/^\s*>\s?(.*)$/);
+    if(match){closeList();resetOrderedSequence();const quote=[match[1]];while(i+1<lines.length&&/^\s*>\s?/.test(lines[i+1]))quote.push(lines[++i].replace(/^\s*>\s?/,''));out.push(`<blockquote>${inlineMarkdown(quote.join('\n')).replace(/\n/g,'<br>')}</blockquote>`);i++;continue}
+    // Basic GitHub-style tables. A separator row identifies the header.
+    if(i+1<lines.length&&/^\s*\|?\s*:?-{3,}:?\s*(?:\|\s*:?-{3,}:?\s*)+\|?\s*$/.test(lines[i+1])&&line.includes('|')){
+      closeList();resetOrderedSequence();const cells=s=>s.trim().replace(/^\|/,'').replace(/\|$/,'').split('|').map(x=>x.trim());const head=cells(line);i+=2;const rows=[];while(i<lines.length&&lines[i].includes('|')&&lines[i].trim()){rows.push(cells(lines[i]));i++}out.push(`<table><thead><tr>${head.map(x=>`<th>${inlineMarkdown(x)}</th>`).join('')}</tr></thead><tbody>${rows.map(row=>`<tr>${head.map((_,n)=>`<td>${inlineMarkdown(row[n]||'')}</td>`).join('')}</tr>`).join('')}</tbody></table>`);continue;
+    }
+    closeList();resetOrderedSequence();const paragraph=[line];while(i+1<lines.length&&lines[i+1].trim()&&!/^\s*(?:#{1,6})\s+/.test(lines[i+1])&&!/^\s*(?:[-*+]\s+|\d+[.)]\s+|>\s?)/.test(lines[i+1]))paragraph.push(lines[++i]);out.push(`<p>${inlineMarkdown(paragraph.join('\n')).replace(/\n/g,'<br>')}</p>`);i++;
+  }
+  if(inCode)out.push(`<pre><code>${escapeHtml(code.join('\n'))}</code></pre>`);closeList();return out.map(x=>typeof x==='string'?x:'').join('');
+}
+function messageHtml(type,text){const body=type==='bot'?markdownToHtml(text):escapeHtml(text);return `<div class="msg ${type}"><div class="avatar">${type==='bot'?'✦':'你'}</div><div class="bubble${type==='bot'?' markdown':''}">${body}</div></div>`}
+function add(type,text){log.insertAdjacentHTML('beforeend',messageHtml(type,text));log.scrollTop=log.scrollHeight}
+function extractionCardHtml(data){
+  const value=v=>escapeHtml(v??'');
+  const rows=(data.items||[]).map(item=>`<div class="item-row"><label class="extraction-field project-field">项目<input data-field="project" value="${value(item.project)}"></label><label class="extraction-field">数量<input data-field="quantity" inputmode="decimal" value="${value(item.quantity)}"></label><label class="extraction-field">单价<input data-field="unit_price" inputmode="decimal" value="${value(item.unit_price)}"></label><button type="button" class="remove-item" title="删除明细">删除</button></div>`).join('');
+  return `<section class="extraction-card" data-image-name="${value(data.image_name)}"><h3>识别结果（可修改）</h3><div class="extraction-grid"><label class="extraction-field">顾客公司<input data-field="customer_company" value="${value(data.customer_company)}"></label><label class="extraction-field">发注日<input data-field="order_date" placeholder="YYYY-MM-DD" value="${value(data.order_date)}"></label><label class="extraction-field wide">源公司<input data-field="source_company" value="${value(data.source_company)}"></label></div><div class="items-title"><span>订单明细</span><button type="button" class="add-item">＋ 添加明细</button></div><div class="item-rows">${rows}</div><div class="import-actions"><button type="button" class="confirm-import">确认导入</button><span class="import-status">请核对字段，修改会在导入时同步提交</span></div></section>`
+}
+function addExtractionCard(data){log.insertAdjacentHTML('beforeend',extractionCardHtml(data));log.scrollTop=log.scrollHeight}
+function collectExtraction(card){
+  const get=field=>card.querySelector(`.extraction-grid [data-field="${field}"]`).value.trim()||null;
+  return {image_name:card.dataset.imageName||'',customer_company:get('customer_company'),order_date:get('order_date'),source_company:get('source_company'),items:[...card.querySelectorAll('.item-row')].map(row=>({project:row.querySelector('[data-field="project"]').value.trim()||null,quantity:row.querySelector('[data-field="quantity"]').value.trim()||null,unit_price:row.querySelector('[data-field="unit_price"]').value.trim()||null}))}
+}
+async function responseJson(response){
+  const type=response.headers.get('content-type')||'';
+  if(!type.includes('application/json'))throw Error(response.ok?'服务器返回了非 JSON 数据':`服务器错误（HTTP ${response.status}）`);
+  return response.json()
+}
+async function confirmImport(card){
+  const button=card.querySelector('.confirm-import'),status=card.querySelector('.import-status');
+  if(!card.querySelector('.item-row')){status.textContent='至少需要一条明细';return}
+  button.disabled=true;status.textContent='正在导入…';
+  try{
+    const payload={...collectExtraction(card),client_request_id:card.dataset.requestId||(card.dataset.requestId=newId())};
+    const response=await fetch('/api/documents/import',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}),result=await responseJson(response);
+    if(!response.ok)throw Error(result.detail?.message||'导入失败');
+    card.classList.add('imported');card.querySelectorAll('input,.add-item,.remove-item').forEach(element=>{element.disabled=true;element.setAttribute('disabled','')});button.disabled=true;button.setAttribute('disabled','');button.textContent='已导入';status.textContent=`成功写入 ${result.imported_count} 条明细`;saveHistory();
+  }catch(error){button.disabled=false;status.textContent='导入失败：'+error.message}
+}
+function addThinking(){const holder=document.createElement('div');holder.className='msg bot thinking-msg';holder.innerHTML='<div class="avatar">✦</div><div class="bubble" role="status">Thinking</div>';log.appendChild(holder);log.scrollTop=log.scrollHeight;return holder}
+function start(){if(!started){started=true;content.classList.add('started')}}
+function historyTitle(){const first=log.querySelector('.user .bubble');return first?first.textContent.trim():'新对话'}
+function historyHtml(){const copy=log.cloneNode(true);copy.querySelectorAll('.thinking-msg').forEach(node=>node.remove());return copy.innerHTML}
+function saveHistory({touch=false}={}){
+  if(!cid)return;
+  const existing=histories.find(x=>x.session_id===cid);
+  const createdAt=existing?.createdAt||Date.now();
+  const item={...(existing||{}),session_id:cid,title:historyTitle(),html:historyHtml(),createdAt,updatedAt:touch?Date.now():(existing?.updatedAt||createdAt)};
+  histories=histories.filter(x=>x.session_id!==cid);histories.push(item);sortHistories();histories=histories.slice(0,MAX_HISTORY);persistHistories();renderHistory()
+}
+function saveHistoryMessage(sessionId,type,text){
+  const item=histories.find(x=>x.session_id===sessionId);if(!item)return;
+  const holder=document.createElement('div');holder.innerHTML=item.html||'';holder.insertAdjacentHTML('beforeend',messageHtml(type,text));
+  item.html=holder.innerHTML;item.title=item.title||'新对话';persistHistories();renderHistory()
+}
+function sortHistories(){histories.sort((a,b)=>(b.updatedAt||b.createdAt||0)-(a.updatedAt||a.createdAt||0))}
+function dayLabel(value){const d=new Date(value),now=new Date();return d.toDateString()===now.toDateString()?'今天':'更早'}
+function renderHistory(){
+  sortHistories();historyList.innerHTML='';if(!histories.length){historyList.innerHTML='<div class="history-empty">暂无对话，开始一次新对话吧</div>';return}
+  ['今天','更早'].forEach(group=>{const rows=histories.filter(x=>dayLabel(x.updatedAt||x.createdAt||0)===group);if(!rows.length)return;const wrap=document.createElement('div');wrap.className='history-group';wrap.innerHTML=`<div class="group-label">${group}</div>`;rows.forEach(item=>{const button=document.createElement('button');button.className='history-item'+(item.session_id===cid?' active':'');button.textContent=item.title||'新对话';button.title=item.title||'新对话';button.dataset.sessionId=item.session_id;button.onclick=()=>openHistory(button.dataset.sessionId);wrap.appendChild(button)});historyList.appendChild(wrap)})
+}
+function openHistory(sessionId){if(sessionId===cid)return;saveHistory();const item=histories.find(x=>x.session_id===sessionId);if(!item)return;cid=item.session_id;log.innerHTML=item.html;started=true;content.classList.add('started');renderHistory();log.scrollTop=log.scrollHeight}
+function newChat(){saveHistory();cid=null;started=false;content.classList.remove('started');log.innerHTML='<div class="msg bot"><div class="avatar">✦</div><div class="bubble">欢迎使用企业文档智能体。你可以选择一个快捷操作，或直接输入问题。</div></div>';msg.value='';file.value='';fileLabel.textContent='上传 PNG 发注书';renderHistory();msg.focus()}
+async function send(){
+  if(requestInFlight)return;
+  const text=msg.value.trim(),f=file.files[0];if(!text&&!f)return;
+  cid=cid||newId();const requestCid=cid;start();add('user',text||`上传 ${f.name}`);saveHistory({touch:true});
+  const fd=new FormData();fd.append('message',text);fd.append('client_request_id',newId());fd.append('conversation_id',requestCid);if(f)fd.append('files',f);msg.value='';clearSelectedFile();
+  requestInFlight=true;sendButton.disabled=true;sendButton.setAttribute('aria-busy','true');const thinking=addThinking();
+  try{
+    const r=await fetch('/api/chat',{method:'POST',body:fd}),j=await responseJson(r);if(!r.ok)throw Error(j.detail?.message||'请求失败');
+    if(cid===requestCid){add('bot',j.answer);if(j.intent==='extract_document'&&j.data?.extraction?.items?.length)addExtractionCard(j.data.extraction);saveHistory()}else saveHistoryMessage(requestCid,'bot',j.answer);
+  }catch(e){
+    const answer='暂时无法处理：'+e.message;
+    if(cid===requestCid){add('bot',answer);saveHistory()}else saveHistoryMessage(requestCid,'bot',answer);
+  }finally{
+    thinking.remove();requestInFlight=false;sendButton.disabled=false;sendButton.removeAttribute('aria-busy');
+  }
+}
+log.addEventListener('input',event=>{if(event.target.matches('.extraction-card input')){event.target.setAttribute('value',event.target.value);saveHistory()}});
+log.addEventListener('click',event=>{
+  const card=event.target.closest('.extraction-card');if(!card)return;
+  if(event.target.closest('.confirm-import'))confirmImport(card);
+  if(event.target.closest('.remove-item')){event.target.closest('.item-row').remove();saveHistory()}
+  if(event.target.closest('.add-item')){card.querySelector('.item-rows').insertAdjacentHTML('beforeend',`<div class="item-row"><label class="extraction-field project-field">项目<input data-field="project" value=""></label><label class="extraction-field">数量<input data-field="quantity" inputmode="decimal" value=""></label><label class="extraction-field">单价<input data-field="unit_price" inputmode="decimal" value=""></label><button type="button" class="remove-item" title="删除明细">删除</button></div>`);saveHistory()}
+});
+msg.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send()}});renderHistory();
+</script>
+</body>
+</html>

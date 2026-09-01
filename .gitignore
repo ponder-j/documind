@@ -1,0 +1,31 @@
+# macOS
+.DS_Store
+
+# Local agent / dev-only instructions (not part of the shipped project)
+AGENTS.md
+
+# Secrets & local configuration (only .env.example is committed)
+.env
+.env.local
+.env.*.local
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+*.egg-info/
+
+# Runtime artifacts
+uploads/
+*.log
+logs/
+
+# Local course assets: large training data & course slides, not distributed via git
+materials/
+
+# IDE / editor
+.idea/
+.vscode/
+*.swp
