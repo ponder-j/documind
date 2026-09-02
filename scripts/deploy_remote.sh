@@ -2,7 +2,7 @@
 # One-command deployment. Set DASHSCOPE_API_KEY only in the remote .env.
 set -euo pipefail
 REMOTE="${REMOTE:-server-4090}"
-REMOTE_ROOT="${REMOTE_ROOT:-/workspace/forth/chatbot}"
+REMOTE_ROOT="${REMOTE_ROOT:-/workspace/team3/chatbot}"
 SESSION="${CHATBOT_TMUX_SESSION:-chatbot-api}"
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
@@ -88,12 +88,13 @@ done
 source "$CONDA_ROOT/etc/profile.d/conda.sh"
 conda activate team3
 cd "$REMOTE_ROOT"
+mkdir -p "${REMOTE_ROOT}/logs"
 if tmux has-session -t "$SESSION" 2>/dev/null; then tmux kill-session -t "$SESSION"; fi
 if [[ -f .env ]]; then set -a; source .env; set +a; fi
-tmux new-session -d -s "$SESSION" "exec .venv/bin/python -m uvicorn agent.main:app --host 0.0.0.0 --port 8000 2>&1 | tee /workspace/forth/chatbot.log"
+tmux new-session -d -s "$SESSION" "exec .venv/bin/python -m uvicorn agent.main:app --host 0.0.0.0 --port 8000 2>&1 | tee ${REMOTE_ROOT}/logs/chatbot.log"
 for attempt in {1..15}; do
   curl -fsS http://127.0.0.1:8000/health >/dev/null 2>&1 && break
-  [[ "$attempt" == "15" ]] && { echo 'FastAPI failed to start; inspect /workspace/forth/chatbot.log' >&2; exit 1; }
+  [[ "$attempt" == "15" ]] && { echo "FastAPI failed to start; inspect ${REMOTE_ROOT}/logs/chatbot.log" >&2; exit 1; }
   sleep 1
 done
 REMOTE_RUN

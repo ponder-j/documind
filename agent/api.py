@@ -1,4 +1,4 @@
-import base64, json, math, os, re, statistics, uuid
+import base64, csv, json, math, os, re, statistics, uuid
 from datetime import datetime
 from pathlib import Path
 import httpx
@@ -9,16 +9,24 @@ from fastapi.responses import FileResponse
 from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
-    # Qwen3.8-Flash via DashScope compatible-mode API.  Keep the key in the
-    # DASHSCOPE_API_KEY environment variable (never commit it to source).
+    # Text/agent model (currently Qwen3.8-Flash via DashScope compatible API).
+    # Keep the key in the DASHSCOPE_API_KEY environment variable (never commit
+    # it to source).
     model_base_url: str = 'https://dashscope.aliyuncs.com/compatible-mode/v1'
     model_name: str = 'qwen3.8-flash'
     model_api_key: str = ''
+    # Vision extraction model.  This is deliberately separate from the text
+    # agent model: the locally deployed LLaMA-Factory InternVL service exposes
+    # model ``vl`` on the currently running remote port 5003 (override with
+    # VISION_MODEL_BASE_URL when the service is moved).
+    vision_model_base_url: str = 'http://127.0.0.1:5003/v1'
+    vision_model_name: str = 'vl'
+    vision_model_api_key: str = ''
     model_timeout_seconds: int = 120
     model_enable_thinking: bool = True
     agent_mode: str = 'auto'
     database_url: str = 'postgresql://postgres:postgres@127.0.0.1:5432/chatbot'
-    upload_dir: str = '/workspace/forth/data/uploads'; max_upload_size_mb: int = 10
+    upload_dir: str = '/workspace/team3/chatbot/data/uploads'; max_upload_size_mb: int = 10
     allow_origins: str = 'http://localhost:8000'
 settings=Settings()
 if not settings.model_api_key:
@@ -537,12 +545,106 @@ def parse_json_object(text):
     start=text.find('{'); end=text.rfind('}')
     if start < 0 or end <= start:
         raise ValueError('模型未返回可解析的 JSON')
-    return json.loads(text[start:end+1])
-async def model_extract(data,name):
-    prompt='只返回JSON：{"customer_company":null,"order_date":null,"source_company":null,"items":[{"project":null,"quantity":null,"unit_price":null}]}'
-    content=[{'type':'text','text':prompt},{'type':'image_url','image_url':{'url':'data:image/png;base64,'+base64.b64encode(data).decode()}}]
+    candidate = text[start:end+1]
+    try:
+        return json.loads(candidate)
+    except json.JSONDecodeError:
+        # Small vision models may hit the token limit after emitting several
+        # complete line-item objects. Recover the valid prefix so the UI can
+        # show partial results for human confirmation instead of discarding the
+        # whole extraction. Only complete item objects are retained.
+        prefix = text[start:]
+        out = {}
+        for field in ('customer_company', 'order_date', 'source_company'):
+            m = re.search(r'"' + field + r'"\s*:\s*(null|"(?:\\.|[^"\\])*")', prefix)
+            if m:
+                try: out[field] = json.loads(m.group(1))
+                except json.JSONDecodeError: out[field] = None
+            else: out[field] = None
+        items_match = re.search(r'"items"\s*:\s*\[', prefix)
+        items = []
+        if items_match:
+            item_text = prefix[items_match.end():]
+            for match in re.finditer(r'\{\s*"project"\s*:\s*(null|"(?:\\.|[^"\\])*")\s*,\s*"quantity"\s*:\s*([^,}]+)\s*,\s*"unit_price"\s*:\s*([^,}]+)', item_text):
+                try:
+                    project = json.loads(match.group(1))
+                    quantity = json.loads(match.group(2).strip())
+                    unit_price = json.loads(match.group(3).strip())
+                except (json.JSONDecodeError, TypeError, ValueError):
+                    continue
+                items.append({'project': project, 'quantity': quantity, 'unit_price': unit_price})
+                # Guard the UI/database confirmation flow against runaway
+                # repetition from a model that ignores the requested row count.
+                if len(items) >= 30:
+                    break
+        if not items:
+            raise
+        out['items'] = items
+        return out
+_VISION_SYSTEM = ('你是企业单据关键信息提取助手。根据图片逐行提取信息，只输出指定CSV，'
+               '不添加Markdown或解释，不猜测图片中不可见的内容。')
+_VISION_PROMPT = ('提取这张请求书的全部商品明细，输出标准CSV。\n'
+                  '第一行必须是：desc,date,from,item,amount,price\n'
+                  '字段含义：desc=顾客公司（买方）；date=单据日期；from=源公司（卖方）；item=商品名称；amount=该行商品数量（不是金额）；price=该行商品单价。\n'
+                  '日期规则：右上角有两个并列日期时取左侧可变日期；其他情况取请求日/請求日，不要取支払期限。日期统一为YYYY-MM-DD。\n'
+                  '数量使用整数；单价不带货币符号和千位逗号，保留两位小数。保留商品行的原始顺序及重复行，不合并同名商品；公司和商品名称保留原语言。')
+_CSV_HEADER = ('desc', 'date', 'from', 'item', 'amount', 'price')
+
+def parse_csv_extraction(text):
+    """Parse the CSV answer the locally fine-tuned InternVL is trained to emit.
+
+    The model was SFT'd on ShareGPT samples whose target is a standard CSV
+    (header: desc,date,from,item,amount,price).  Asking it for unrelated JSON
+    makes text fields (item/desc/from) collapse to null, so the agent must
+    request the CSV format and convert it here into the structured extraction
+    dict used by the UI and import flow.
+    """
+    if isinstance(text, list):
+        text = ''.join((x.get('text', '') if isinstance(x, dict) else str(x)) for x in text)
+    text = str(text or '').strip()
+    text = re.sub(r'<think>.*?</think>', '', text, flags=re.S | re.I)
+    text = re.sub(r'```(?:csv)?', '', text, flags=re.I).replace('```', '').strip()
+    if not text:
+        raise ValueError('模型未返回 CSV')
+    lines = [ln for ln in text.splitlines() if ln.strip()]
+    start = 0
+    for i, line in enumerate(lines):
+        cells = [c.strip().strip('"').casefold() for c in line.split(',')]
+        if cells[:6] == list(_CSV_HEADER):
+            start = i + 1
+            break
+    rows = [row[:6] for row in csv.reader(lines[start:]) if len(row) >= 6]
+    if not rows:
+        raise ValueError('模型 CSV 中没有可用的明细行')
+    extraction = {
+        'customer_company': next((r[0].strip() for r in rows if r[0].strip()), None),
+        'order_date': next((r[1].strip() for r in rows if r[1].strip()), None),
+        'source_company': next((r[2].strip() for r in rows if r[2].strip()), None),
+        'items': [{'project': r[3].strip() or None, 'quantity': r[4].strip() or None, 'unit_price': r[5].strip() or None} for r in rows],
+    }
+    if not any(item['project'] or item['quantity'] for item in extraction['items']):
+        raise ValueError('模型 CSV 中没有可用的商品明细')
+    return extraction
+
+async def model_extract(data, name):
+    content = [{'type': 'text', 'text': _VISION_PROMPT},
+               {'type': 'image_url', 'image_url': {'url': 'data:image/png;base64,' + base64.b64encode(data).decode()}}]
+    headers = {}
+    if settings.vision_model_api_key:
+        headers['Authorization'] = 'Bearer ' + settings.vision_model_api_key
+    payload = {
+        'model': settings.vision_model_name,
+        'messages': [{'role': 'system', 'content': _VISION_SYSTEM},
+                     {'role': 'user', 'content': content}],
+        'temperature': 0,
+        'max_tokens': 2048,
+        'enable_thinking': False,
+    }
     async with httpx.AsyncClient(timeout=settings.model_timeout_seconds) as c:
-        r=await c.post(settings.model_base_url+'/chat/completions',headers={'Authorization':'Bearer '+settings.model_api_key},json={'model':settings.model_name,'messages':[{'role':'user','content':content}],'temperature':0,'max_tokens':1024,'enable_thinking':False}); r.raise_for_status(); text=r.json()['choices'][0]['message'].get('content',''); return parse_json_object(text)
+        r = await c.post(settings.vision_model_base_url.rstrip('/') + '/chat/completions', headers=headers, json=payload)
+        r.raise_for_status()
+        text = r.json()['choices'][0]['message'].get('content', '')
+        return parse_csv_extraction(text)
 
 async def model_chat(message, history=None):
     """Call Qwen for normal text conversation through DashScope compatible API."""
@@ -585,7 +687,7 @@ async def chat(message: str=Form(''), conversation_id: str|None=Form(None), clie
             extraction_warnings=['当前为 Mock 模式'] if settings.agent_mode=='mock' else []
         except Exception as exc:
             extraction={'image_name':f.filename,'customer_company':None,'order_date':None,'source_company':None,'items':[]}
-            extraction_warnings=['Qwen 返回格式无法解析，请重试或检查模型日志']
+            extraction_warnings=[f'视觉模型识别失败（{type(exc).__name__}），请检查 VISION_MODEL_BASE_URL/模型服务日志后重试']
         answer = format_extraction_answer(extraction) if extraction.get('items') else '单据识别失败，请重试。'
         if extraction.get('items'):
             extraction['image_name'] = f.filename

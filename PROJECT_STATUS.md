@@ -58,7 +58,7 @@
 5. **文档 RAG**：建立文档切分、索引、检索和来源展示，支持字段口径、系统说明等知识问答；订单事实仍以 SQL 为准。
 6. **模型与效果评估**：完成 InternVL3-2B LoRA 微调、基线与微调指标（BLEU/Rouge）记录，并评估抽取准确率和问答正确率。
 7. **生产化**：增加结构化日志、认证与权限、Redis 会话、SSE 流式响应、进程守护、限流和更严格的输入安全校验。
-8. **远程模型服务**：按项目部署约定补齐 5001 端口的 LLaMA-Factory/OpenAI 兼容模型服务，并与当前 Agent 做连通性验证。
+8. **远程模型服务**：按项目部署约定补齐 5003 端口的 LLaMA-Factory/OpenAI 兼容模型服务（模型名 `vl`），并与当前 Agent 做连通性验证。
 
 ## 当前运行配置
 
@@ -73,9 +73,12 @@ DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:5432/chatbot
 
 ```bash
 ssh server-4090
-cd /workspace/forth/chatbot
+cd /workspace/team3/chatbot
 conda activate team3
 export DASHSCOPE_API_KEY="<服务器环境变量>"
+# 推荐：使用一键脚本（自动 ssh 到 server-4090，tmux 常驻）
+./scripts/manage.sh start
+# 或手动：
 python -m uvicorn agent.main:app --host 0.0.0.0 --port 8000
 ```
 

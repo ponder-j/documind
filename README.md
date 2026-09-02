@@ -49,7 +49,8 @@
 │   └── index.html       # 对话单页应用
 ├── scripts/
 │   ├── deploy_remote.sh # 一键远程部署（server-4090）
-│   ├── tunnel.sh        # SSH 端口转发 8000/5001
+│   ├── manage.sh        # 一键启动/停止/重启/状态（chatbot + InternVL vl）
+│   ├── tunnel.sh        # SSH 端口转发 8000/5001/5003
 │   └── init_db.py       # 建表 + 导入 output_label.xlsx
 ├── requirements.txt
 ├── .env.example         # 环境变量模板（不含真实密钥）
@@ -79,6 +80,12 @@ python -m uvicorn agent.main:app --host 0.0.0.0 --port 8000
 # 一键部署：上传代码 -> uv 安装依赖 -> 初始化 PostgreSQL -> tmux 启动 8000 服务
 ./scripts/deploy_remote.sh
 
+# 一键启动/守护（自动 ssh 到 server-4090；tmux 常驻，断连不退出）
+./scripts/manage.sh start        # 启动 chatbot(8000) + InternVL vl(5003)
+./scripts/manage.sh status       # 查看运行状态
+./scripts/manage.sh restart      # 全部重启
+./scripts/manage.sh stop         # 全部停止
+
 # 本地访问远程服务（端口转发）
 ./scripts/tunnel.sh
 # 然后访问 http://localhost:8000
@@ -93,11 +100,14 @@ python -m uvicorn agent.main:app --host 0.0.0.0 --port 8000
 | `MODEL_BASE_URL` | `https://dashscope.aliyuncs.com/compatible-mode/v1` | OpenAI 兼容 API 地址 |
 | `MODEL_NAME` | `qwen3.8-flash` | 模型名 |
 | `MODEL_API_KEY` | 空 | 模型 Key（优先从 `DASHSCOPE_API_KEY` 读取） |
+| `VISION_MODEL_BASE_URL` | `http://127.0.0.1:5003/v1` | 发注书识图模型 OpenAI 兼容 API（当前远程 `vl` 服务） |
+| `VISION_MODEL_NAME` | `vl` | 识图模型名 |
+| `VISION_MODEL_API_KEY` | 空 | 识图服务鉴权 Key（本地部署通常为空） |
 | `MODEL_TIMEOUT_SECONDS` | `120` | 模型调用超时 |
 | `MODEL_ENABLE_THINKING` | `true` | 是否启用模型思考 |
 | `AGENT_MODE` | `auto` | `auto`=模型编排；`mock`=本地规则回退 |
 | `DATABASE_URL` | `postgresql://postgres:postgres@127.0.0.1:5432/chatbot` | PostgreSQL 连接串 |
-| `UPLOAD_DIR` | `/workspace/forth/data/uploads` | 上传图片保存目录 |
+| `UPLOAD_DIR` | `/workspace/team3/chatbot/data/uploads` | 上传图片保存目录 |
 | `MAX_UPLOAD_SIZE_MB` | `10` | 单图大小上限 |
 | `ALLOW_ORIGINS` | `http://localhost:8000` | CORS 白名单（逗号分隔） |
 
