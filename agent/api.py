@@ -7,6 +7,11 @@ from fastapi import FastAPI, File, Form, UploadFile, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from pydantic_settings import BaseSettings
+from dotenv import load_dotenv
+
+# 读取项目根目录的 .env（不存在时静默跳过，不覆盖已存在的系统环境变量）。
+# 本地运行直接生效；远程部署时 deploy_remote.sh 也会 source .env，双保险。
+load_dotenv()
 
 class Settings(BaseSettings):
     # Text/agent model (currently Qwen3.8-Flash via DashScope compatible API).
@@ -89,11 +94,15 @@ TOOL_SCHEMAS = [
     }},
 ]
 
-def db(): return psycopg.connect(settings.database_url)
+def db(): return psycopg.connect(settings.database_url, connect_timeout=5)
 def init_db():
     try:
         with db() as c: c.execute('''CREATE TABLE IF NOT EXISTS orders(id SERIAL PRIMARY KEY,image_name TEXT NOT NULL,customer_company TEXT,order_date DATE,source_company TEXT,project TEXT,quantity DOUBLE PRECISION,unit_price DOUBLE PRECISION,total_amount DOUBLE PRECISION,created_at TIMESTAMPTZ DEFAULT now())''')
-    except Exception: pass
+    except Exception as exc:
+        # 数据库不可用时不阻塞启动；connect_timeout=5 保证快速失败。
+        print(f'[api] init_db 跳过（数据库不可用：{type(exc).__name__}）', flush=True)
+# 建表在模块导入时执行一次（无数据库时 5s 内超时跳过，不再长时间阻塞导入）。
+# 更稳妥的改法是移入 FastAPI lifespan/startup，可在后续 PR 与队友讨论。
 init_db()
 
 def classify(msg):

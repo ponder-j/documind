@@ -85,8 +85,10 @@ start_vl() {
     return 0
   fi
   echo "[vl] 启动 InternVL 识图服务 → ${VL_LOG}"
+  # team3 分配的是物理 GPU3（CUDA index 3）。必须固定 CUDA_VISIBLE_DEVICES，
+  # 否则 llamafactory api 默认使用 cuda:0（GPU0），会占用其他组的卡。
   tmux new-session -d -s "$SESSION_VL" \
-    "export API_PORT=5003 API_MODEL_NAME=vl HF_ENDPOINT=https://hf-mirror.com; \
+    "export CUDA_VISIBLE_DEVICES=3 API_PORT=5003 API_MODEL_NAME=vl HF_ENDPOINT=https://hf-mirror.com; \
 exec ${LLAMAFACTORY_CLI} api --model_name_or_path ${MODEL_PATH} --template intern_vl \
 --infer_backend huggingface --trust_remote_code True 2>&1 | tee -a ${VL_LOG}"
   for i in $(seq 1 120); do
