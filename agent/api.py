@@ -7,6 +7,11 @@ from fastapi import FastAPI, File, Form, UploadFile, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from pydantic_settings import BaseSettings
+from dotenv import load_dotenv
+
+# 读取项目根目录的 .env（不存在时静默跳过，不覆盖已存在的系统环境变量）。
+# 本地运行直接生效；远程部署时 deploy_remote.sh 也会 source .env，双保险。
+load_dotenv()
 
 class Settings(BaseSettings):
     # Text/agent model (currently Qwen3.8-Flash via DashScope compatible API).
