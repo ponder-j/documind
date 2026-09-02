@@ -94,11 +94,15 @@ TOOL_SCHEMAS = [
     }},
 ]
 
-def db(): return psycopg.connect(settings.database_url)
+def db(): return psycopg.connect(settings.database_url, connect_timeout=5)
 def init_db():
     try:
         with db() as c: c.execute('''CREATE TABLE IF NOT EXISTS orders(id SERIAL PRIMARY KEY,image_name TEXT NOT NULL,customer_company TEXT,order_date DATE,source_company TEXT,project TEXT,quantity DOUBLE PRECISION,unit_price DOUBLE PRECISION,total_amount DOUBLE PRECISION,created_at TIMESTAMPTZ DEFAULT now())''')
-    except Exception: pass
+    except Exception as exc:
+        # 数据库不可用时不阻塞启动；connect_timeout=5 保证快速失败。
+        print(f'[api] init_db 跳过（数据库不可用：{type(exc).__name__}）', flush=True)
+# 建表在模块导入时执行一次（无数据库时 5s 内超时跳过，不再长时间阻塞导入）。
+# 更稳妥的改法是移入 FastAPI lifespan/startup，可在后续 PR 与队友讨论。
 init_db()
 
 def classify(msg):
