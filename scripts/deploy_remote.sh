@@ -90,8 +90,10 @@ conda activate team3
 cd "$REMOTE_ROOT"
 mkdir -p "${REMOTE_ROOT}/logs"
 if tmux has-session -t "$SESSION" 2>/dev/null; then tmux kill-session -t "$SESSION"; fi
-if [[ -f .env ]]; then set -a; source .env; set +a; fi
-tmux new-session -d -s "$SESSION" "exec .venv/bin/python -m uvicorn agent.main:app --host 0.0.0.0 --port 8000 2>&1 | tee ${REMOTE_ROOT}/logs/chatbot.log"
+# tmux 不继承外层 shell 的环境变量，改为在 pane 命令内加载 .env
+ENV_SETUP=""
+if [[ -f .env ]]; then ENV_SETUP="set -a; source .env; set +a;"; fi
+tmux new-session -d -s "$SESSION" "${ENV_SETUP} exec .venv/bin/python -m uvicorn agent.main:app --host 0.0.0.0 --port 8000 2>&1 | tee ${REMOTE_ROOT}/logs/chatbot.log"
 for attempt in {1..15}; do
   curl -fsS http://127.0.0.1:8000/health >/dev/null 2>&1 && break
   [[ "$attempt" == "15" ]] && { echo "FastAPI failed to start; inspect ${REMOTE_ROOT}/logs/chatbot.log" >&2; exit 1; }

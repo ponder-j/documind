@@ -101,7 +101,7 @@ def classify(msg):
         return 'import_document'
     if any(k in msg for k in ('当前数据库', '数据库情况', '数据库状态', '表结构', '字段范围', '数据量', '数据总量', '有多少条数据', '有多少条记录')):
         return 'database_status'
-    if any(k in msg for k in ('前10','前 10','前5','前 5','前几名','排名','排行','榜单')) and any(k in msg for k in ('公司','客户','交易额','销售额','销售量','数量')):
+    if any(k in msg for k in ('前10','前 10','前5','前 5','前几名','排名','排行','榜单','排个名','从小到大','从大到小','升序','降序')) and any(k in msg for k in ('公司','客户','交易额','销售额','销售量','数量')):
         return 'company_ranking'
     if any(k in msg for k in ('趋势','变化','走势')): return 'trend_analysis'
     if any(k in msg for k in ('最高','最低','最大','最小','平均','均值','排序','排名')): return 'python_statistics'
@@ -134,7 +134,9 @@ def extract_filters(message):
         pass
     if company is None:
         # Fallback for a company not yet present in the DB (useful for diagnostics).
-        m = re.search(r'([^\s，。,.、！？?]+?(?:股份有限公司|有限责任公司|有限公司|株式会社|公司))', cleaned)
+        # Only accept strong company suffixes; a bare "公司" would otherwise match
+        # generic phrases such as "所有公司/各公司" and poison the SQL filter.
+        m = re.search(r'([^\s，。,.、！？?]+?(?:股份有限公司|有限责任公司|有限公司|株式会社))', cleaned)
         if m: company = m.group(1).strip()
     return {'years': years, 'customer_company': company}
 
@@ -493,6 +495,8 @@ def deterministic_agent(message, cid):
         top_match = re.search(r'前\s*(\d+)\s*(?:名|家|个)', message)
         top_n = int(top_match.group(1)) if top_match else 10
         ranking = company_ranking_tool({'metric': metric, 'top_n': top_n, **filters})
+        if any(k in message for k in ('从小到大', '由小到大', '由低到高', '从低到高', '升序', '少到多')):
+            ranking = list(reversed(ranking))
         label = '销售数量' if metric == 'quantity' else '总交易额'
         if not ranking:
             answer = '数据库中没有可用于公司排名的订单记录。'
@@ -711,7 +715,9 @@ async def chat(message: str=Form(''), conversation_id: str|None=Form(None), clie
         # Keep the service useful during a transient Qwen outage. The fallback
         # still executes the same allow-listed SQL/Python tools, never raw SQL.
         result = deterministic_agent(message, cid)
-        warnings = [f'Qwen 工具编排不可用，已使用本地工具回退：{type(exc).__name__}']
+        detail = str(exc)
+        if len(detail) > 300: detail = detail[:300] + '...'
+        warnings = [f'Qwen 工具编排不可用，已使用本地工具回退：{type(exc).__name__}: {detail}']
         if not sessions.get(cid) or sessions[cid][-1].get('role') != 'assistant' or sessions[cid][-1].get('tool_calls'):
             sessions.setdefault(cid, []).append({'role': 'assistant', 'content': result['answer']})
     intent = result.get('intent', classify(message))

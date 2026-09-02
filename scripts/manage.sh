@@ -105,17 +105,17 @@ start_chatbot() {
     echo "[chatbot] 已在运行（tmux: ${SESSION_CHATBOT}）"
     return 0
   fi
+  # tmux 不会继承启动 shell 里 source 的环境变量，必须在 pane 命令内重新加载 .env
   if [[ -f "${CHATBOT_ROOT}/.env" ]]; then
-    set -a; # shellcheck disable=SC1091
-    source "${CHATBOT_ROOT}/.env"
-    set +a
+    ENV_SETUP="set -a; source '${CHATBOT_ROOT}/.env'; set +a;"
   else
     echo "[chatbot] 警告: ${CHATBOT_ROOT}/.env 不存在，使用代码内默认配置（DASHSCOPE_API_KEY 需自行 export）" >&2
+    ENV_SETUP=""
   fi
   echo "[chatbot] 启动 Chatbot → ${CHATBOT_LOG}"
   cd "$CHATBOT_ROOT"
   tmux new-session -d -s "$SESSION_CHATBOT" -c "$CHATBOT_ROOT" \
-    "exec ${CHATBOT_PY} -m uvicorn agent.main:app --host 0.0.0.0 --port 8000 2>&1 | tee -a ${CHATBOT_LOG}"
+    "${ENV_SETUP} exec ${CHATBOT_PY} -m uvicorn agent.main:app --host 0.0.0.0 --port 8000 2>&1 | tee -a ${CHATBOT_LOG}"
   for i in $(seq 1 60); do
     if curl -fsS -m 3 "$CHATBOT_URL" >/dev/null 2>&1; then
       echo "[chatbot] 就绪（等待 ${i} 次探测）"
