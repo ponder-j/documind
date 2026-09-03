@@ -26,6 +26,7 @@
               DashScope OpenAI 兼容 API (MODEL_BASE_URL)
 ```
 
+文字版架构说明与 mermaid 图见 [`ARCHITECTURE.md`](ARCHITECTURE.md)；
 详细架构图见 `architecture.drawio`（draw.io / diagrams.net 打开）。
 
 ## 技术栈
