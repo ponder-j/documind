@@ -6,7 +6,7 @@
 
 ### 服务与前端
 
-- FastAPI 服务入口：`agent/main.py`、`agent/api.py`。
+- FastAPI 服务入口：`agent/main.py`、`agent/api.py`（路由层；核心逻辑拆分到 `agent/` 下 config/state/db/intent/tools/importers/vision/agents 模块）。
 - 原生 HTML/CSS/JavaScript 对话页面：`frontend/index.html`。
 - `GET /health` 健康检查和首页访问。
 - `POST /api/chat` 统一处理文本问题与 PNG 发注书上传。
