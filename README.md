@@ -43,8 +43,16 @@
 ```
 .
 ├── agent/
-│   ├── main.py          # FastAPI 入口（uvicorn agent.main:app）
-│   └── api.py           # 核心逻辑：路由、意图识别、工具、模型调用、导入
+│   ├── main.py          # FastAPI 入口（uvicorn agent.main:app，入口不变）
+│   ├── api.py           # 路由层：/health、/api/chat、/api/documents/import
+│   ├── config.py        # Settings（环境变量配置单例）
+│   ├── state.py         # SessionStore：会话/上下文/导入幂等状态
+│   ├── db.py            # PostgreSQL 访问层（orders 查询/汇总/趋势/排名）
+│   ├── intent.py        # 规则意图分类 + 年份/公司过滤抽取
+│   ├── tools.py         # 工具 Schema、execute_tool 分发、统计
+│   ├── importers.py     # 导入校验与幂等持久化
+│   ├── vision.py        # InternVL 识图客户端 + CSV 解析
+│   └── agents.py        # model_agent / deterministic_agent + 响应组装
 ├── frontend/
 │   └── index.html       # 对话单页应用
 ├── scripts/
