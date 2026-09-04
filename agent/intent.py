@@ -12,6 +12,10 @@ def classify(msg):
     """Classify a user message into one of the supported intent labels."""
     if any(k in msg for k in ('导入数据库', '确认导入', '写入数据库', '保存到数据库', '入库')):
         return 'import_document'
+    # Chart requests must win over trend/ranking words: "把趋势画成柱状图" is a
+    # visualization request, not a plain text trend answer.
+    if any(k in msg for k in ('可视化', '柱状图', '柱形图', '条形图', '折线图', '饼图', '图表', '画图', '画出', '画成', '画一下', '画个', '绘制', '曲线图', '趋势图', '对比图')):
+        return 'data_visualization'
     if any(k in msg for k in ('当前数据库', '数据库情况', '数据库状态', '表结构', '字段范围', '数据量', '数据总量', '有多少条数据', '有多少条记录')):
         return 'database_status'
     if any(k in msg for k in ('前10', '前 10', '前5', '前 5', '前几名', '排名', '排行', '榜单', '排个名', '从小到大', '从大到小', '升序', '降序')) and any(k in msg for k in ('公司', '客户', '交易额', '销售额', '销售量', '数量')):

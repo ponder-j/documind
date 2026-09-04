@@ -12,6 +12,7 @@ import uuid
 
 import httpx
 
+from .charts import visualize_from_message
 from .config import settings
 from .db import (
     aggregate_sales_tool,
@@ -34,13 +35,14 @@ TOOL_INTENTS = {
     'trend_analysis': 'trend_analysis',
     'company_ranking': 'company_ranking',
     'python_statistics': 'python_statistics',
+    'visualize_data': 'data_visualization',
     'database_status': 'database_status',
 }
 
 
 def build_result(*, answer, intent, records=None, summary=None, trend=None,
                  ranking=None, statistics=None, database_status=None,
-                 import_result=None):
+                 import_result=None, chart=None):
     """Assemble the canonical agent response envelope used by the HTTP layer."""
     return {
         'answer': answer,
@@ -52,6 +54,7 @@ def build_result(*, answer, intent, records=None, summary=None, trend=None,
         'statistics': statistics,
         'database_status': database_status,
         'import_result': import_result,
+        'chart': chart,
     }
 
 
@@ -97,6 +100,11 @@ async def model_agent(message, cid):
         '用户要求按公司/客户分组、排名、前N名、榜单时，必须调用 company_ranking；'
         '总交易额/销售额使用 metric=total_amount，销售数量/销量使用 metric=quantity，top_n 使用用户指定的数字。'
         '不要把公司级排名误当成单笔订单最高，也不要在未调用工具时猜测数据库结果。'
+        '用户要求画图/图表/可视化/柱状图/折线图/饼图/趋势图/对比图时，必须调用 visualize_data：'
+        '趋势按年用 chart_type=line + group_by=year；'
+        '公司/项目/源公司对比用 chart_type=bar + group_by=customer_company/project/source_company；'
+        '占比用 chart_type=pie；金额/销售额用 metric=total_amount，数量/销量用 metric=quantity；'
+        '“把刚才/这批/上述记录画成图”用 scope=last_query，否则默认 database。'
         '导入数据库只能由页面的“确认导入”按钮完成；你不能调用或模拟导入操作。'
         '工具返回后，只根据工具结果作简洁、可核验的回答，并说明统计范围。'
     )
@@ -138,6 +146,7 @@ async def model_agent(message, cid):
                 ranking=last_tool_result if last_tool_name == 'company_ranking' else None,
                 statistics=last_tool_result if last_tool_name == 'python_statistics' else None,
                 database_status=last_tool_result if last_tool_name == 'database_status' else None,
+                chart=last_tool_result if last_tool_name == 'visualize_data' else None,
             )
         store.append(
             cid,
@@ -283,6 +292,21 @@ def deterministic_agent(message, cid):
             },
             statistics=stats,
         )
+    if intent == 'data_visualization':
+        chart = visualize_from_message(message, cid)
+        if not chart or chart.get('empty'):
+            message_text = chart.get('message') if isinstance(chart, dict) else ''
+            return build_result(
+                answer=message_text or '没有可用于绘图的订单数据，请先查询数据或换一个筛选条件。',
+                intent=intent,
+                records=[],
+            )
+        summary = chart['summary']
+        answer = (
+            f"已生成「{chart['title']}」：按{summary['dimension_label']}共 {chart['point_count']} 组，"
+            f"合计 {summary['metric_label']} {summary['total']:,.2f} {summary['unit']}。"
+        )
+        return build_result(answer=answer, intent=intent, records=[], chart=chart)
     if intent == 'database_status':
         status = database_status_tool()
         if status.get('exists'):
@@ -305,5 +329,5 @@ def deterministic_agent(message, cid):
             intent=intent,
             records=[],
         )
-    answer = '我可以识别发注书、查询订单、统计销售数据并分析趋势。'
+    answer = '我可以识别发注书、查询订单、统计销售数据、分析趋势，并把数据画成图表。'
     return build_result(answer=answer, intent=intent, records=[])

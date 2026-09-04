@@ -5,6 +5,7 @@ Business logic lives in the sibling modules (``agents``, ``vision``,
 them.  Keeping it thin means the deployed entry point
 ``uvicorn agent.main:app`` never changes when internals are refactored.
 """
+import re
 import uuid
 from datetime import datetime
 from pathlib import Path
@@ -40,6 +41,7 @@ DB_INTENTS = (
     'trend_analysis',
     'company_ranking',
     'python_statistics',
+    'data_visualization',
     'database_status',
     'import_document',
 )
@@ -134,6 +136,19 @@ async def _handle_text_message(cid: str, message: str):
         last = store.last_message(cid)
         if last is None or last.get('role') != 'assistant' or last.get('tool_calls'):
             store.append(cid, {'role': 'assistant', 'content': result['answer']})
+    # Safety net: when the user asked for a chart but the LLM path answered
+    # without selecting visualize_data, generate the chart with the local tool
+    # so a visualization request always produces an image.
+    if result.get('chart') is None and classify(message) == 'data_visualization':
+        chart_result = deterministic_agent(message, cid)
+        if chart_result.get('chart'):
+            warnings.append('Qwen 未自动调用图表工具，已由本地可视化工具生成图表。')
+            result = chart_result
+            last = store.last_message(cid)
+            if last is not None and last.get('role') == 'assistant' and not last.get('tool_calls'):
+                last['content'] = result['answer']
+            else:
+                store.append(cid, {'role': 'assistant', 'content': result['answer']})
     return result, warnings
 
 
@@ -155,7 +170,7 @@ def _chat_response(cid: str, trace: str, intent: str, result: dict, warnings: li
             'database_status': result.get('database_status'),
             'import_result': result.get('import_result'),
         },
-        'chart': None,
+        'chart': result.get('chart'),
         'sources': [{'type': 'database', 'name': 'orders'}] if intent in DB_INTENTS else [],
         'warnings': warnings,
         'created_at': datetime.now().isoformat(),
@@ -202,6 +217,17 @@ async def chat(
     result, warnings = await _handle_text_message(cid, message)
     intent = result.get('intent', classify(message))
     return _chat_response(cid, trace, intent, result, warnings)
+
+
+@app.get('/api/charts/{filename}')
+def chart_file(filename: str):
+    """Serve a generated chart PNG (names are server-generated UUIDs)."""
+    if not re.fullmatch(r'[A-Za-z0-9._-]+\.png', filename):
+        raise HTTPException(404, detail={'code': 'CHART_NOT_FOUND', 'message': '图表不存在'})
+    path = Path(settings.chart_dir) / filename
+    if not path.is_file():
+        raise HTTPException(404, detail={'code': 'CHART_NOT_FOUND', 'message': '图表不存在'})
+    return FileResponse(path, media_type='image/png', headers={'Cache-Control': 'public, max-age=3600'})
 
 
 @app.post('/api/documents/import')

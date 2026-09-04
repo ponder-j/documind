@@ -9,6 +9,7 @@
 - **单据识别（Vision）**：上传 PNG 发注书，由多模态模型（默认 `qwen3.8-flash`，可切换 InternVL3-2B）抽取结构化字段，前端提供可编辑确认卡片，确认后幂等写入数据库。
 - **订单问答（Agent + Function Tools）**：意图识别 + 白名单工具编排，模型选择工具、Python 执行 SQL，模型无法执行任意 SQL。
 - **结构化分析**：按客户/年份查询明细、销售数量/金额聚合、年度趋势、公司排名、Python 最高/最低/平均统计。
+- **数据可视化（matplotlib）**：模型可调用 `visualize_data` 工具，按年度/公司/项目/源公司自动生成折线图、柱状图、饼图 PNG，并在对话中直接展示图片。
 - **多轮上下文**：同一 `conversation_id` 保留对话历史与上一轮查询结果，"这批/刚才/上述记录"类追问可复用。
 - **高可用**：Qwen 工具编排不可用时自动回退到本地规则 Agent，服务不中断。
 - **一键部署**：`scripts/deploy_remote.sh` 自动完成上传、依赖安装、PostgreSQL 初始化与 tmux 启动。
@@ -33,7 +34,7 @@
 
 | 层 | 技术 |
 |---|---|
-| 后端 | Python 3.12 · FastAPI · Uvicorn · httpx · psycopg3 |
+| 后端 | Python 3.12 · FastAPI · Uvicorn · httpx · psycopg3 · matplotlib（图表） |
 | 模型 | Qwen3.8-Flash（DashScope 兼容 API）· InternVL3-2B（LLaMA-Factory 微调，LoRA） |
 | 数据 | PostgreSQL（orders 表）· openpyxl 导入标注数据 |
 | 前端 | 原生 HTML/CSS/JavaScript（无构建步骤） |
@@ -51,6 +52,7 @@
 │   ├── db.py            # PostgreSQL 访问层（orders 查询/汇总/趋势/排名）
 │   ├── intent.py        # 规则意图分类 + 年份/公司过滤抽取
 │   ├── tools.py         # 工具 Schema、execute_tool 分发、统计
+│   ├── charts.py         # matplotlib 图表生成（visualize_data 工具后端）
 │   ├── importers.py     # 导入校验与幂等持久化
 │   ├── vision.py        # InternVL 识图客户端 + CSV 解析
 │   └── agents.py        # model_agent / deterministic_agent + 响应组装

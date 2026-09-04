@@ -30,6 +30,11 @@ class Settings(BaseSettings):
     database_url: str = 'postgresql://postgres:postgres@127.0.0.1:5432/chatbot'
     upload_dir: str = '/workspace/team3/chatbot/data/uploads'
     max_upload_size_mb: int = 10
+
+    # Matplotlib chart output.  PNGs are written under ``chart_dir`` and served
+    # by the HTTP layer at ``chart_url_prefix/<filename>`` (same origin).
+    chart_dir: str = '/workspace/team3/chatbot/data/charts'
+    chart_url_prefix: str = '/api/charts'
     allow_origins: str = 'http://localhost:8000'
 
 

@@ -171,6 +171,52 @@ def company_ranking_tool(args):
     ]
 
 
+# Allowed grouping dimensions for the chart tool.  Each value is a SQL
+# expression whose result becomes the chart category label.
+GROUP_BY_COLUMNS = {
+    'year': 'EXTRACT(YEAR FROM order_date)',
+    'customer_company': 'customer_company',
+    'source_company': 'source_company',
+    'project': 'project',
+}
+
+
+def group_sales_tool(filters, group_by='year'):
+    """Aggregate orders by one dimension for charting (read-only).
+
+    Returns a list of ``{'label', 'order_count', 'quantity',
+    'total_amount'}`` dicts (one per group).  Sorting and truncation for the
+    chart happen in Python (:mod:`agent.charts`), so this function stays a
+    generic, safe data-access helper.  Text columns with blank values are
+    excluded; ``year`` keeps every year present in the data.
+    """
+    group_by = group_by if group_by in GROUP_BY_COLUMNS else 'year'
+    expr = GROUP_BY_COLUMNS[group_by]
+    where, args = _where_clause(filters)
+    if group_by in ('customer_company', 'source_company', 'project'):
+        where = (where + ' AND ' if where else ' WHERE ') + f'BTRIM({expr}) <> %s'
+        args.append('')
+    with db() as conn:
+        rows = conn.execute(
+            f'SELECT {expr}, COUNT(*), COALESCE(SUM(quantity), 0), '
+            f'COALESCE(SUM(total_amount), 0) FROM orders' + where + ' GROUP BY 1',
+            args,
+        ).fetchall()
+    out = []
+    for key, count, quantity, amount in rows:
+        if group_by == 'year':
+            label = str(key) if key is not None else '未知年份'
+        else:
+            label = (key or '').strip() or '未标注'
+        out.append({
+            'label': label,
+            'order_count': int(count),
+            'quantity': float(quantity or 0),
+            'total_amount': float(amount or 0),
+        })
+    return out
+
+
 def database_status_tool():
     """Return safe, read-only metadata so the agent can explain DB availability."""
     with db() as conn:

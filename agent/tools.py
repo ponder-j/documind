@@ -7,6 +7,7 @@ model can never execute arbitrary SQL supplied by a user.
 """
 import statistics
 
+from .charts import visualize_tool
 from .db import (
     _normalise_filters,
     aggregate_sales_tool,
@@ -63,6 +64,20 @@ TOOL_SCHEMAS = [
             'customer_company': {'type': ['string', 'null']},
             'years': {'type': 'array', 'items': {'type': 'integer'}},
         }, 'required': ['operation'], 'additionalProperties': False},
+    }},
+    {'type': 'function', 'function': {
+        'name': 'visualize_data',
+        'description': '将订单销售数据绘制成可视化图表（PNG 图片），返回图片 URL。适用于用户要求“画图/图表/可视化/柱状图/折线图/饼图/趋势图/对比图”时。chart_type: line=折线图(趋势)、bar=柱状图(对比)、pie=饼图(占比)；group_by: year=按年度、customer_company=按顾客公司、project=按项目、source_company=按源公司；metric: quantity=销售数量(件)、total_amount=销售金额(元)，金额/销售额用 total_amount。用户说“把刚才/这批/上述记录画成图”时 scope 用 last_query，否则默认 database。',
+        'parameters': {'type': 'object', 'properties': {
+            'chart_type': {'type': 'string', 'enum': ['line', 'bar', 'pie'], 'description': '图表类型'},
+            'group_by': {'type': 'string', 'enum': ['year', 'customer_company', 'project', 'source_company'], 'description': '分类维度'},
+            'metric': {'type': 'string', 'enum': ['quantity', 'total_amount'], 'description': '绘图指标，默认 quantity'},
+            'customer_company': {'type': ['string', 'null'], 'description': '客户公司全名或关键词，用于筛选'},
+            'years': {'type': 'array', 'items': {'type': 'integer'}, 'description': '年份筛选，例如 [2024]'},
+            'scope': {'type': 'string', 'enum': ['database', 'last_query'], 'default': 'database', 'description': 'database=按条件从数据库聚合；last_query=对上一轮查询结果绘图'},
+            'top_n': {'type': 'integer', 'description': '最多显示前N组（year 维度忽略）'},
+            'title': {'type': ['string', 'null'], 'description': '可选图表标题'},
+        }, 'required': ['chart_type', 'group_by'], 'additionalProperties': False},
     }},
     {'type': 'function', 'function': {
         'name': 'database_status',
@@ -143,6 +158,10 @@ def execute_tool(name, args, cid):
         return result
     if name == 'python_statistics':
         return python_statistics_tool(args, cid)
+    if name == 'visualize_data':
+        result = visualize_tool(args, cid)
+        context['last_chart'] = result
+        return result
     if name == 'database_status':
         return database_status_tool()
     raise ValueError(f'不允许调用工具: {name}')
@@ -163,4 +182,15 @@ def tool_result_for_model(name, result):
         return result
     if name == 'company_ranking' and isinstance(result, list):
         return {'ranking': result, 'returned_count': len(result)}
+    if name == 'visualize_data' and isinstance(result, dict):
+        # The model needs the URL + a compact series, not the whole payload.
+        return {
+            'empty': result.get('empty', False),
+            'chart_type': result.get('chart_type'),
+            'title': result.get('title'),
+            'image_url': result.get('image_url'),
+            'point_count': result.get('point_count'),
+            'summary': result.get('summary'),
+            'series': (result.get('series') or [])[:20],
+        }
     return result

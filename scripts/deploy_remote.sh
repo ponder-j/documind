@@ -88,7 +88,7 @@ done
 source "$CONDA_ROOT/etc/profile.d/conda.sh"
 conda activate team3
 cd "$REMOTE_ROOT"
-mkdir -p "${REMOTE_ROOT}/logs"
+mkdir -p "${REMOTE_ROOT}/logs" "${REMOTE_ROOT}/data/uploads" "${REMOTE_ROOT}/data/charts"
 if tmux has-session -t "$SESSION" 2>/dev/null; then tmux kill-session -t "$SESSION"; fi
 # tmux 不继承外层 shell 的环境变量，改为在 pane 命令内加载 .env
 ENV_SETUP=""
